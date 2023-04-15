@@ -1,0 +1,35 @@
+name: Release
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      branch: ${{ steps.branch.outputs.branch }}
+      tag: ${{ steps.tag.outputs.tag }}
+    steps:
+      - name: checkout source code
+        uses: actions/checkout@v3
+
+      - name: get current branch
+        id: branch
+        run: |
+          echo "branch=$(git rev-parse --abbrev-ref HEAD)" >> $GITHUB_OUTPUT
+
+      - name: get current tag
+        id: tag
+        run: |
+          echo "tag=$(git describe --tags --exact-match 2>/dev/null || echo '')" >> $GITHUB_OUTPUT
+
+  docker:
+    needs: prepare
+    runs-on: ubuntu-latest
+    steps:
+      - name: print information
+        run: |
+          echo "branch: ${{ needs.prepare.outputs.branch }}"
+          echo "tag: ${{ needs.prepare.outputs.tag }}"
+
